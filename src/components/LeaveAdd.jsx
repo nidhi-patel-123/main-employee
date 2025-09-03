@@ -1,13 +1,10 @@
-import React, { useState } from "react";
-
-const initialLeaves = [
-  { id: 1, type: "Sick Leave", from: "2025-08-29", to: "2025-08-31", description: "fever", status: "Approved" },
-  { id: 2, type: "Casual Leave", from: "2025-08-29", to: "2025-08-31", description: "kuch nhi", status: "Approved" },
-];
+import React, { useState, useEffect } from "react";
+// import axios from "axios"; // ✅ Jab backend ready ho tab use karna
 
 export default function EmployeeLeaves() {
-  const [leaves, setLeaves] = useState(initialLeaves);
+  const [leaves, setLeaves] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     type: "Sick Leave",
     from: "",
@@ -15,13 +12,31 @@ export default function EmployeeLeaves() {
     description: "",
   });
 
-  // Handle input change
+  // ✅ Fetch Leaves from Backend (initial load)
+  useEffect(() => {
+    const fetchLeaves = async () => {
+      try {
+        setLoading(true);
+        // const { data } = await axios.get("/api/leaves");
+        // setLeaves(data);
+        console.log("📡 GET /api/leaves");
+      } catch (error) {
+        console.error("Fetch Leaves Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeaves();
+  }, []);
+
+  // ✅ Handle input change
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Submit new leave
-  const handleSubmit = (e) => {
+  // ✅ Submit new leave
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.from || !form.to || !form.description) {
       alert("Please fill all fields!");
@@ -29,17 +44,29 @@ export default function EmployeeLeaves() {
     }
 
     const newLeave = {
-      id: leaves.length + 1,
       type: form.type,
       from: form.from,
       to: form.to,
       description: form.description,
       status: "Pending",
+      employeeId: "EMP001", // TODO: login user id se lena
     };
 
-    setLeaves([...leaves, newLeave]);
-    setForm({ type: "Sick Leave", from: "", to: "", description: "" });
-    setShowForm(false);
+    try {
+      setLoading(true);
+      // const { data } = await axios.post("/api/leaves", newLeave);
+      // setLeaves([...leaves, data]);
+      console.log("📡 POST /api/leaves", newLeave);
+
+      // Frontend dummy update
+      setLeaves([...leaves, { id: leaves.length + 1, ...newLeave }]);
+      setForm({ type: "Sick Leave", from: "", to: "", description: "" });
+      setShowForm(false);
+    } catch (error) {
+      console.error("Submit Leave Error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,48 +77,59 @@ export default function EmployeeLeaves() {
           onClick={() => setShowForm(true)}
           className="px-5 py-2 bg-gray-800 text-white rounded-lg shadow hover:bg-gray-700"
         >
-          Add New Leave
+          Apply for Leave
         </button>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto bg-white shadow rounded-lg">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-3 border">SNo</th>
-              <th className="p-3 border">Leave Type</th>
-              <th className="p-3 border">From</th>
-              <th className="p-3 border">To</th>
-              <th className="p-3 border">Description</th>
-              <th className="p-3 border">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaves.map((leave, index) => (
-              <tr key={leave.id} className="text-center hover:bg-gray-50">
-                <td className="p-3 border">{index + 1}</td>
-                <td className="p-3 border">{leave.type}</td>
-                <td className="p-3 border">{leave.from}</td>
-                <td className="p-3 border">{leave.to}</td>
-                <td className="p-3 border">{leave.description}</td>
-                <td className="p-3 border">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      leave.status === "Approved"
-                        ? "bg-green-100 text-green-700"
-                        : leave.status === "Rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {leave.status}
-                  </span>
-                </td>
+        {loading ? (
+          <p className="text-center py-6 text-gray-500">Loading...</p>
+        ) : (
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-3 border">SNo</th>
+                <th className="p-3 border">Leave Type</th>
+                <th className="p-3 border">From</th>
+                <th className="p-3 border">To</th>
+                <th className="p-3 border">Description</th>
+                <th className="p-3 border">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {leaves.map((leave, index) => (
+                <tr key={leave.id} className="text-center hover:bg-gray-50">
+                  <td className="p-3 border">{index + 1}</td>
+                  <td className="p-3 border">{leave.type}</td>
+                  <td className="p-3 border">{leave.from}</td>
+                  <td className="p-3 border">{leave.to}</td>
+                  <td className="p-3 border">{leave.description}</td>
+                  <td className="p-3 border">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs ${
+                        leave.status === "Approved"
+                          ? "bg-green-100 text-green-700"
+                          : leave.status === "Rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {leave.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {leaves.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="text-center py-6 text-gray-500">
+                    No leaves found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Modal Form */}
@@ -166,7 +204,7 @@ export default function EmployeeLeaves() {
                   type="submit"
                   className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
                 >
-                  Submit
+                  {loading ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </form>

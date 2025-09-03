@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios"; // 🔹 Backend connect karne ke liye ready
 
 const EmployeeLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -7,31 +8,46 @@ const EmployeeLogin = () => {
     password: "",
     phone: "",
   });
+  const [loading, setLoading] = useState(false);
 
+  // 🔹 Input change handler
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  // 🔹 Submit handler
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isLogin) {
-      // login validation
-      if (!formData.email || !formData.password) {
-        alert("Please fill all fields");
-        return;
+    // Basic validation
+    if (!formData.email || !formData.password || (!isLogin && !formData.phone)) {
+      alert("⚠️ Please fill all fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isLogin) {
+        // 🔹 Login API call
+        // const res = await axios.post("/api/auth/login", {
+        //   email: formData.email,
+        //   password: formData.password,
+        // });
+        // console.log(res.data);
+
+        alert("✅ Login successful!");
+      } else {
+        // 🔹 Signup API call
+        // const res = await axios.post("/api/auth/signup", formData);
+        // console.log(res.data);
+
+        alert("✅ Account created successfully!");
       }
-      alert("✅ Login successful!");
-    } else {
-      // signup validation
-      if (!formData.email || !formData.password || !formData.phone) {
-        alert("Please fill all fields");
-        return;
-      }
-      alert("✅ Account created successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("❌ Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,16 +91,17 @@ const EmployeeLogin = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {isLogin ? "Sign In" : "Sign Up"}
+              {loading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
             </button>
           </form>
 
           {/* Forgot Password (only in login) */}
           {isLogin && (
             <p className="text-sm text-right mt-2">
-              <a href="#" className="text-blue-600 hover:underline">
+              <a href="/forgot-password" className="text-blue-600 hover:underline">
                 Forgot your password?
               </a>
             </p>
@@ -96,26 +113,6 @@ const EmployeeLogin = () => {
             <span className="px-2 text-gray-400 text-sm">OR</span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
-
-          {/* Social Buttons */}
-          {/* <div className="flex gap-4">
-            <button className="flex-1 border rounded-lg py-2 flex items-center justify-center space-x-2 hover:bg-gray-50">
-              <img
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                className="w-5 h-5"
-              />
-              <span>Google</span>
-            </button>
-            <button className="flex-1 border rounded-lg py-2 flex items-center justify-center space-x-2 hover:bg-gray-50">
-              <img
-                src="https://www.svgrepo.com/show/475647/facebook-color.svg"
-                alt="Facebook"
-                className="w-5 h-5"
-              />
-              <span>Facebook</span>
-            </button>
-          </div> */}
 
           {/* Switch Mode */}
           <p className="text-center text-sm mt-6 text-gray-600">

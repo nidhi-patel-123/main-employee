@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Download } from "lucide-react";
 
-const EmployeePayroll = () => {
-  // sample data (normally API se aayega)
-  const [payrolls] = useState([
+const Payroll = () => {
+  // Sample data (normally API se aayega)
+  const [payrolls, setPayrolls] = useState([
     {
       id: 1,
       month: "August 2025",
@@ -32,22 +32,22 @@ const EmployeePayroll = () => {
 
   const [search, setSearch] = useState("");
 
-  // filter logic
+  // Filter logic
   const filteredPayrolls = payrolls.filter((p) =>
     p.month.toLowerCase().includes(search.toLowerCase())
   );
 
-  // fake download slip function
+  // Fake download slip
   const handleDownload = (month) => {
     alert(`Salary slip for ${month} downloaded ✅`);
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">My Salary</h2>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">My Salary</h2>
 
-      {/* Search */}
-      <div className="mb-4 flex justify-between items-center">
+        {/* Search */}
         <input
           type="text"
           placeholder="Search by month..."
@@ -58,42 +58,48 @@ const EmployeePayroll = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto shadow-lg rounded-lg">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-blue-600 text-white text-left">
-              <th className="px-4 py-3">Month</th>
-              <th className="px-4 py-3">Basic Salary</th>
-              <th className="px-4 py-3">Allowance</th>
-              <th className="px-4 py-3">Deduction</th>
-              <th className="px-4 py-3">Net Salary</th>
-              {/* <th className="px-4 py-3 text-center">Action</th> */}
+      <div className="overflow-x-auto bg-white shadow rounded-lg">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-3 border">SNo</th>
+              <th className="p-3 border">Month</th>
+              <th className="p-3 border">Basic</th>
+              <th className="p-3 border">Allowance</th>
+              <th className="p-3 border">Deduction</th>
+              <th className="p-3 border">Net Salary</th>
+              <th className="p-3 border text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredPayrolls.length > 0 ? (
-              filteredPayrolls.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-b hover:bg-gray-50 transition"
-                >
-                  <td className="px-4 py-3 font-medium">{p.month}</td>
-                  <td className="px-4 py-3">₹{p.basic.toLocaleString()}</td>
-                  <td className="px-4 py-3">₹{p.allowance.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-red-600">
+              filteredPayrolls.map((p, index) => (
+                <tr key={p.id} className="text-center hover:bg-gray-50">
+                  <td className="p-3 border">{index + 1}</td>
+                  <td className="p-3 border font-medium">{p.month}</td>
+                  <td className="p-3 border">₹{p.basic.toLocaleString()}</td>
+                  <td className="p-3 border">₹{p.allowance.toLocaleString()}</td>
+                  <td className="p-3 border text-red-600">
                     ₹{p.deduction.toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 font-semibold text-green-600">
+                  <td className="p-3 border text-green-600 font-semibold">
                     ₹{p.net.toLocaleString()}
                   </td>
-                  
+                  <td className="p-3 border text-center">
+                    <button
+                      onClick={() => handleDownload(p.month)}
+                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm mx-auto"
+                    >
+                      <Download size={16} /> Slip
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan="6"
-                  className="px-4 py-6 text-center text-gray-500"
+                  colSpan="7"
+                  className="p-6 text-center text-gray-500"
                 >
                   No payroll records found
                 </td>
@@ -106,4 +112,4 @@ const EmployeePayroll = () => {
   );
 };
 
-export default EmployeePayroll;
+export default Payroll;

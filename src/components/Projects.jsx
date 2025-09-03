@@ -1,31 +1,10 @@
-import React, { useState } from "react";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { AiOutlinePlus } from "react-icons/ai";
+import axios from "axios";
 
 export default function Projects() {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Website Redesign",
-      client: "Acme Corporation",
-      startDate: "2023-04-01",
-      deadline: "2023-06-30",
-      team: ["S", "J", "D"],
-      progress: 65,
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      name: "Mobile App Development",
-      client: "TechStart Inc.",
-      startDate: "2023-03-15",
-      deadline: "2023-07-15",
-      team: ["W", "E", "M"],
-      progress: 40,
-      status: "In Progress",
-    },
-  ]);
-
+  const [projects, setProjects] = useState([]);
   const [filter, setFilter] = useState("All Projects");
   const [showModal, setShowModal] = useState(false);
   const [editProject, setEditProject] = useState(null);
@@ -34,26 +13,63 @@ export default function Projects() {
     client: "",
     startDate: "",
     deadline: "",
-    team: [],
+    team: "",
     progress: 0,
     status: "In Progress",
   });
 
-  // Filter Logic
-  const filteredProjects =
-    filter === "All Projects"
-      ? projects
-      : projects.filter((p) => p.status === filter);
+  // ✅ Fetch projects from backend
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-  // Delete Project
-  const handleDelete = (id) => {
-    setProjects(projects.filter((p) => p.id !== id));
+  const fetchProjects = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/projects"); // API endpoint
+      setProjects(res.data);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+    }
   };
 
-  // Open Add/Edit Modal
+  // ✅ Save or Update project
+  const handleSave = async () => {
+    const projectData = {
+      ...form,
+      team: form.team.split(",").map((t) => t.trim()),
+      progress: Number(form.progress),
+    };
+
+    try {
+      if (editProject) {
+        await axios.put(
+          `http://localhost:5000/api/projects/${editProject}`,
+          projectData
+        );
+      } else {
+        await axios.post("http://localhost:5000/api/projects", projectData);
+      }
+      fetchProjects(); // refresh
+      setShowModal(false);
+    } catch (err) {
+      console.error("Error saving project:", err);
+    }
+  };
+
+  // ✅ Delete project
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/projects/${id}`);
+      fetchProjects();
+    } catch (err) {
+      console.error("Error deleting project:", err);
+    }
+  };
+
+  // ✅ Open Add/Edit Modal
   const handleOpenModal = (project = null) => {
     if (project) {
-      setEditProject(project.id);
+      setEditProject(project._id); // backend id
       setForm({ ...project, team: project.team.join(", ") });
     } else {
       setEditProject(null);
@@ -70,65 +86,22 @@ export default function Projects() {
     setShowModal(true);
   };
 
-  // Save Project
-  const handleSave = () => {
-    const projectData = {
-      ...form,
-      team: form.team.split(",").map((t) => t.trim()),
-      progress: Number(form.progress),
-    };
-    if (editProject) {
-      setProjects(
-        projects.map((p) => (p.id === editProject ? { ...projectData, id: editProject } : p))
-      );
-    } else {
-      setProjects([...projects, { ...projectData, id: Date.now() }]);
-    }
-    setShowModal(false);
-  };
-
-  // // Export CSV
-  // const handleExport = () => {
-  //   const csv = [
-  //     ["Project Name", "Client", "Start Date", "Deadline", "Team", "Progress", "Status"],
-  //     ...projects.map((p) => [
-  //       p.name,
-  //       p.client,
-  //       p.startDate,
-  //       p.deadline,
-  //       p.team.join(";"),
-  //       p.progress + "%",
-  //       p.status,
-  //     ]),
-  //   ]
-  //     .map((row) => row.join(","))
-  //     .join("\n");
-
-  //   const blob = new Blob([csv], { type: "text/csv" });
-  //   const link = document.createElement("a");
-  //   link.href = URL.createObjectURL(blob);
-  //   link.download = "projects.csv";
-  //   link.click();
-  // };
+  // ✅ Filter Logic
+  const filteredProjects =
+    filter === "All Projects"
+      ? projects
+      : projects.filter((p) => p.status === filter);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Project Management</h1>
-        <div className="flex gap-2">
-          {/* <button
-            className="px-4 py-2 border rounded bg-white hover:bg-gray-100"
-            onClick={handleExport}
-          >
-            Export
-          </button> */}
-          <button
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            onClick={() => handleOpenModal()}
-          >
-            <AiOutlinePlus className="mr-2" /> Add Project
-          </button>
-        </div>
+        <button
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={() => handleOpenModal()}
+        >
+          <AiOutlinePlus className="mr-2" /> Add Project
+        </button>
       </div>
 
       {/* Tabs */}
@@ -165,8 +138,10 @@ export default function Projects() {
           </thead>
           <tbody>
             {filteredProjects.map((project) => (
-              <tr key={project.id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-3 text-blue-600 font-medium">{project.name}</td>
+              <tr key={project._id} className="border-b hover:bg-gray-50">
+                <td className="px-6 py-3 text-blue-600 font-medium">
+                  {project.name}
+                </td>
                 <td className="px-6 py-3">{project.client}</td>
                 <td className="px-6 py-3">{project.startDate}</td>
                 <td className="px-6 py-3">{project.deadline}</td>
@@ -176,7 +151,7 @@ export default function Projects() {
                       key={idx}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-xs font-bold"
                     >
-                      {member}
+                      {member[0]}
                     </div>
                   ))}
                   {project.team.length > 3 && (
@@ -189,7 +164,9 @@ export default function Projects() {
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
                       className={`h-2.5 rounded-full ${
-                        project.progress === 100 ? "bg-green-500" : "bg-orange-400"
+                        project.progress === 100
+                          ? "bg-green-500"
+                          : "bg-orange-400"
                       }`}
                       style={{ width: `${project.progress}%` }}
                     ></div>
@@ -211,7 +188,7 @@ export default function Projects() {
                   <button onClick={() => handleOpenModal(project)}>
                     <FaEdit />
                   </button>
-                  <button onClick={() => handleDelete(project.id)}>
+                  <button onClick={() => handleDelete(project._id)}>
                     <FaTrash className="text-red-500" />
                   </button>
                 </td>
@@ -235,6 +212,7 @@ export default function Projects() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="border px-3 py-2 rounded"
+                required
               />
               <input
                 type="text"
@@ -242,19 +220,26 @@ export default function Projects() {
                 value={form.client}
                 onChange={(e) => setForm({ ...form, client: e.target.value })}
                 className="border px-3 py-2 rounded"
+                required
               />
               <div className="flex gap-2">
                 <input
                   type="date"
                   value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, startDate: e.target.value })
+                  }
                   className="border px-3 py-2 rounded w-full"
+                  required
                 />
                 <input
                   type="date"
                   value={form.deadline}
-                  onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, deadline: e.target.value })
+                  }
                   className="border px-3 py-2 rounded w-full"
+                  required
                 />
               </div>
               <input
@@ -268,7 +253,9 @@ export default function Projects() {
                 type="number"
                 placeholder="Progress %"
                 value={form.progress}
-                onChange={(e) => setForm({ ...form, progress: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, progress: e.target.value })
+                }
                 className="border px-3 py-2 rounded"
                 min="0"
                 max="100"

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 export default function Setting() {
   const [activeTab, setActiveTab] = useState("Profile");
   const [formData, setFormData] = useState({
-    // Profile
     logo: null,
     companyName: "Acme Corporation",
     email: "admin@acmecorp.com",
@@ -12,14 +11,10 @@ export default function Setting() {
     website: "https://acmecorp.com",
     timezone: "Pacific Time (US & Canada)",
     language: "English (US)",
-
-    // Security
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
     twoFactorAuth: false,
-
-    // Notifications
     emailNotif: true,
     smsNotif: false,
     pushNotif: true,
@@ -48,35 +43,37 @@ export default function Setting() {
   const tabs = ["Profile", "Security", "Notifications"];
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       {/* Tabs */}
-      <div className="flex border-b mb-6">
+      <div className="flex gap-4 border-b mb-6">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-6 py-2 -mb-px border-b-2 font-medium transition-colors ${activeTab === tab
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-blue-600"
-              }`}
+            className={`px-6 py-2 rounded-t-lg font-medium transition-all ${
+              activeTab === tab
+                ? "bg-white shadow text-blue-600 border border-b-0 border-gray-200"
+                : "text-gray-600 hover:text-blue-600"
+            }`}
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* PROFILE TAB */}
-      {activeTab === "Profile" && (
-        <>
+      {/* Tab Content */}
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        {/* PROFILE */}
+        {activeTab === "Profile" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Company Logo */}
+            {/* Logo Upload */}
             <div>
               <label className="block mb-2 font-medium">Company Logo</label>
               {formData.logo && (
                 <img
                   src={formData.logo}
-                  alt="Company Logo"
-                  className="h-16 w-16 rounded mb-3"
+                  alt="Logo"
+                  className="h-16 w-16 rounded-lg mb-3 border"
                 />
               )}
               <input
@@ -96,133 +93,25 @@ export default function Setting() {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full border rounded-lg p-2"
+                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
-            <div>
-              <label className="block mb-2 font-medium">Company Name</label>
-              <input
-                type="text"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Website</label>
-              <input
-                type="url"
-                name="website"
-                value={formData.website}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Timezone</label>
-              <select
-                name="timezone"
-                value={formData.timezone}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              >
-                <option>Pacific Time (US & Canada)</option>
-                <option>Eastern Time (US & Canada)</option>
-                <option>Central Time (US & Canada)</option>
-                <option>India Standard Time</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Phone Number</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Language</label>
-              <select
-                name="language"
-                value={formData.language}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              >
-                <option>English (US)</option>
-                <option>English (UK)</option>
-                <option>Hindi</option>
-                <option>Spanish</option>
-              </select>
-            </div>
+            <InputField label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} />
+            <InputField label="Website" name="website" type="url" value={formData.website} onChange={handleChange} />
+            <InputField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} />
+            <SelectField label="Timezone" name="timezone" value={formData.timezone} onChange={handleChange} options={["Pacific Time (US & Canada)", "Eastern Time (US & Canada)", "Central Time (US & Canada)", "India Standard Time"]} />
+            <InputField label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
+            <SelectField label="Language" name="language" value={formData.language} onChange={handleChange} options={["English (US)", "English (UK)", "Hindi", "Spanish"]} />
           </div>
+        )}
 
-          {/* Save Button */}
-          <div className="mt-6">
-            <button
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Save Changes
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* SECURITY TAB */}
-      {activeTab === "Security" && (
-        <>
-          <div className="max-w-md space-y-4">
-            <div>
-              <label className="block mb-2 font-medium">Current Password</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">New Password</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
+        {/* SECURITY */}
+        {activeTab === "Security" && (
+          <div className="max-w-md space-y-5">
+            <InputField label="Current Password" type="password" name="currentPassword" value={formData.currentPassword} onChange={handleChange} />
+            <InputField label="New Password" type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} />
+            <InputField label="Confirm Password" type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
 
             <div className="flex items-center gap-3 mt-4">
               <input
@@ -235,67 +124,72 @@ export default function Setting() {
               <label className="font-medium">Enable Two-Factor Authentication</label>
             </div>
           </div>
+        )}
 
-          <div className="mt-6">
-            <button
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Save Security Settings
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* NOTIFICATIONS TAB */}
-      {activeTab === "Notifications" && (
-        <>
+        {/* NOTIFICATIONS */}
+        {activeTab === "Notifications" && (
           <div className="max-w-md space-y-4">
-            <div className="flex items-center justify-between border p-3 rounded-lg">
-              <span>Email Notifications</span>
-              <input
-                type="checkbox"
-                name="emailNotif"
-                checked={formData.emailNotif}
-                onChange={handleChange}
-                className="h-5 w-5 text-blue-600"
-              />
-            </div>
-
-            <div className="flex items-center justify-between border p-3 rounded-lg">
-              <span>SMS Notifications</span>
-              <input
-                type="checkbox"
-                name="smsNotif"
-                checked={formData.smsNotif}
-                onChange={handleChange}
-                className="h-5 w-5 text-blue-600"
-              />
-            </div>
-
-            <div className="flex items-center justify-between border p-3 rounded-lg">
-              <span>Push Notifications</span>
-              <input
-                type="checkbox"
-                name="pushNotif"
-                checked={formData.pushNotif}
-                onChange={handleChange}
-                className="h-5 w-5 text-blue-600"
-              />
-            </div>
+            <ToggleField label="Email Notifications" name="emailNotif" checked={formData.emailNotif} onChange={handleChange} />
+            <ToggleField label="SMS Notifications" name="smsNotif" checked={formData.smsNotif} onChange={handleChange} />
+            <ToggleField label="Push Notifications" name="pushNotif" checked={formData.pushNotif} onChange={handleChange} />
           </div>
+        )}
 
-          <div className="mt-6">
-            <button
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Save Notification Settings
-            </button>
-          </div>
-        </>
-      )}
-
+        {/* Save Button */}
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={handleSave}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700"
+          >
+            Save {activeTab} Settings
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
+
+/* Reusable Input */
+const InputField = ({ label, name, type = "text", value, onChange }) => (
+  <div>
+    <label className="block mb-2 font-medium">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+);
+
+/* Reusable Select */
+const SelectField = ({ label, name, value, onChange, options }) => (
+  <div>
+    <label className="block mb-2 font-medium">{label}</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+    >
+      {options.map((opt) => (
+        <option key={opt}>{opt}</option>
+      ))}
+    </select>
+  </div>
+);
+
+/* Reusable Toggle */
+const ToggleField = ({ label, name, checked, onChange }) => (
+  <div className="flex items-center justify-between border p-3 rounded-lg hover:bg-gray-50 transition">
+    <span>{label}</span>
+    <input
+      type="checkbox"
+      name={name}
+      checked={checked}
+      onChange={onChange}
+      className="h-5 w-5 text-blue-600"
+    />
+  </div>
+);

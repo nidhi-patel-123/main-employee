@@ -9,7 +9,7 @@ import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import MyProfile from "./components/MyProfile";
 import Attendance from "./components/Attendance";
-import EmployeeLogin from "./components/EmployeeLogin";
+// import EmployeeLogin from "./components/EmployeeLogin";
 
 
 function App() {

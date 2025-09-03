@@ -5,34 +5,20 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
-const Header = () => {
+const Header = ({ onSearchSelect, notificationsData = [], userName = "Admin" }) => {
   const [openNotifications, setOpenNotifications] = useState(false);
   const [openAdmin, setOpenAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState([
-    "New leave request from John Doe",
-    "Project deadline approaching",
-    "Employee Jane approved attendance",
-  ]);
+  const [notifications, setNotifications] = useState(notificationsData);
 
-  // Sample search data (replace with API results)
-  const employees = ["John Doe", "Jane Smith", "Michael Lee", "Sarah Johnson"];
-  const projects = ["Payroll System", "Employee Portal", "Leave Tracker"];
-  const results = [
-    ...employees.filter((e) =>
-      e.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    ...projects.filter((p) =>
-      p.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-  ];
+  // Sample search data placeholder (replace with API)
+  const [searchResults, setSearchResults] = useState([]);
 
-  // Refs for dropdowns
   const notifRef = useRef(null);
   const adminRef = useRef(null);
   const searchRef = useRef(null);
 
-  // Close dropdowns on outside click
+  // Click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -49,14 +35,35 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Handle search input
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+    // Backend integration point:
+    // Call API with searchQuery to get filtered employees/projects
+    const employees = ["John Doe", "Jane Smith", "Michael Lee", "Sarah Johnson"];
+    const projects = ["Payroll System", "Employee Portal", "Leave Tracker"];
+    const results = [
+      ...employees.filter((e) =>
+        e.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+      ...projects.filter((p) =>
+        p.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    ];
+    setSearchResults(results);
+  }, [searchQuery]);
+
   const handleLogout = () => {
-    alert("Logging out...");
-    // Add real logout logic
+    // backend logout logic here
+    console.log("Logging out...");
   };
 
   return (
     <header className="flex justify-between items-center bg-white shadow-md px-6 py-3 sticky top-0 z-50">
-      {/* Search Bar */}
+      {/* Search */}
       <div className="relative w-1/3" ref={searchRef}>
         <div className="flex items-center bg-gray-100 rounded-lg px-3 py-2">
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
@@ -68,17 +75,15 @@ const Header = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
-        {/* Search Results Dropdown */}
         {searchQuery && (
           <div className="absolute mt-1 w-full bg-white border shadow-lg rounded-md max-h-60 overflow-y-auto z-50">
-            {results.length > 0 ? (
-              results.map((res, idx) => (
+            {searchResults.length > 0 ? (
+              searchResults.map((res, idx) => (
                 <div
                   key={idx}
                   className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   onClick={() => {
-                    alert(`Selected: ${res}`);
+                    onSearchSelect?.(res);
                     setSearchQuery("");
                   }}
                 >
@@ -94,7 +99,7 @@ const Header = () => {
         )}
       </div>
 
-      {/* Right Side Icons */}
+      {/* Right Icons */}
       <div className="flex items-center gap-6">
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
@@ -114,38 +119,39 @@ const Header = () => {
                 Notifications
               </h4>
               <ul className="max-h-60 overflow-y-auto">
-                {notifications.map((note, idx) => (
-                  <li
-                    key={idx}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-600"
-                  >
-                    {note}
-                  </li>
-                ))}
+                {notifications.length > 0 ? (
+                  notifications.map((note, idx) => (
+                    <li
+                      key={idx}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-600"
+                    >
+                      {note}
+                    </li>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-400">
+                    No notifications
+                  </div>
+                )}
               </ul>
-              {notifications.length === 0 && (
-                <div className="px-4 py-2 text-sm text-gray-400">
-                  No notifications
-                </div>
-              )}
             </div>
           )}
         </div>
 
-        {/* Admin/User */}
+        {/* Admin */}
         <div className="relative" ref={adminRef}>
           <div
             className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 rounded-full px-2 py-1 transition-colors"
             onClick={() => setOpenAdmin(!openAdmin)}
           >
             <UserCircleIcon className="h-8 w-8 text-gray-600" />
-            <span className="text-gray-700 font-medium text-sm">Admin</span>
+            <span className="text-gray-700 font-medium text-sm">{userName}</span>
           </div>
 
           {openAdmin && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border shadow-lg rounded-md overflow-hidden z-50">
+            <div className="absolute right-0 mt-2 w-44 bg-white border shadow-lg rounded-md overflow-hidden z-50">
               <button
-                onClick={() => alert("Go to profile")}
+                onClick={() => console.log("Go to profile")}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700"
               >
                 My Profile
