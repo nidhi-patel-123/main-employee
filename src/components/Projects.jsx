@@ -18,21 +18,21 @@ export default function Projects() {
     status: "In Progress",
   });
 
-  // ✅ Fetch projects from backend
+  // ✅ Fetch projects
   useEffect(() => {
     fetchProjects();
   }, []);
 
   const fetchProjects = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/projects"); // API endpoint
+      const res = await axios.get("http://localhost:5000/api/projects");
       setProjects(res.data);
     } catch (err) {
       console.error("Error fetching projects:", err);
     }
   };
 
-  // ✅ Save or Update project
+  // ✅ Save project
   const handleSave = async () => {
     const projectData = {
       ...form,
@@ -49,7 +49,7 @@ export default function Projects() {
       } else {
         await axios.post("http://localhost:5000/api/projects", projectData);
       }
-      fetchProjects(); // refresh
+      fetchProjects();
       setShowModal(false);
     } catch (err) {
       console.error("Error saving project:", err);
@@ -66,10 +66,10 @@ export default function Projects() {
     }
   };
 
-  // ✅ Open Add/Edit Modal
+  // ✅ Open Modal
   const handleOpenModal = (project = null) => {
     if (project) {
-      setEditProject(project._id); // backend id
+      setEditProject(project._id);
       setForm({ ...project, team: project.team.join(", ") });
     } else {
       setEditProject(null);
@@ -86,18 +86,19 @@ export default function Projects() {
     setShowModal(true);
   };
 
-  // ✅ Filter Logic
+  // ✅ Filtering
   const filteredProjects =
     filter === "All Projects"
       ? projects
       : projects.filter((p) => p.status === filter);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Project Management</h1>
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
+        <h1 className="text-xl md:text-2xl font-bold">Project Management</h1>
         <button
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           onClick={() => handleOpenModal()}
         >
           <AiOutlinePlus className="mr-2" /> Add Project
@@ -105,15 +106,15 @@ export default function Projects() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b mb-4">
+      <div className="flex flex-wrap gap-3 border-b mb-6">
         {["All Projects", "In Progress", "Completed", "On Hold"].map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
-            className={`pb-2 ${
+            className={`pb-2 px-2 text-sm md:text-base ${
               filter === tab
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600"
+                ? "border-b-2 border-blue-600 text-blue-600 font-semibold"
+                : "text-gray-600 hover:text-blue-500"
             }`}
           >
             {tab}
@@ -121,12 +122,12 @@ export default function Projects() {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Responsive Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="w-full text-sm text-left">
+        <table className="w-full text-sm text-left hidden md:table">
           <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
             <tr>
-              <th className="px-6 py-3">Project Name</th>
+              <th className="px-6 py-3">Project</th>
               <th className="px-6 py-3">Client</th>
               <th className="px-6 py-3">Start Date</th>
               <th className="px-6 py-3">Deadline</th>
@@ -178,6 +179,8 @@ export default function Projects() {
                     className={`px-3 py-1 rounded-full text-xs ${
                       project.status === "Completed"
                         ? "bg-green-100 text-green-700"
+                        : project.status === "On Hold"
+                        ? "bg-yellow-100 text-yellow-700"
                         : "bg-blue-100 text-blue-700"
                     }`}
                   >
@@ -196,12 +199,77 @@ export default function Projects() {
             ))}
           </tbody>
         </table>
+
+        {/* Mobile View as Cards */}
+        <div className="md:hidden p-3 space-y-4">
+          {filteredProjects.map((project) => (
+            <div
+              key={project._id}
+              className="border rounded-lg p-4 shadow-sm bg-white"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-blue-600">{project.name}</h3>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    project.status === "Completed"
+                      ? "bg-green-100 text-green-700"
+                      : project.status === "On Hold"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {project.status}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600">Client: {project.client}</p>
+              <p className="text-sm text-gray-600">
+                {project.startDate} → {project.deadline}
+              </p>
+              <div className="flex mt-2 -space-x-2">
+                {project.team.slice(0, 3).map((member, idx) => (
+                  <div
+                    key={idx}
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-xs font-bold"
+                  >
+                    {member[0]}
+                  </div>
+                ))}
+                {project.team.length > 3 && (
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 text-xs font-bold">
+                    +{project.team.length - 3}
+                  </div>
+                )}
+              </div>
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className={`h-2.5 rounded-full ${
+                      project.progress === 100
+                        ? "bg-green-500"
+                        : "bg-orange-400"
+                    }`}
+                    style={{ width: `${project.progress}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs">{project.progress}%</span>
+              </div>
+              <div className="flex justify-end gap-3 mt-3 text-gray-600">
+                <button onClick={() => handleOpenModal(project)}>
+                  <FaEdit />
+                </button>
+                <button onClick={() => handleDelete(project._id)}>
+                  <FaTrash className="text-red-500" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 px-3">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
             <h2 className="text-xl font-bold mb-4">
               {editProject ? "Edit Project" : "Add Project"}
             </h2>
@@ -212,7 +280,6 @@ export default function Projects() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="border px-3 py-2 rounded"
-                required
               />
               <input
                 type="text"
@@ -220,7 +287,6 @@ export default function Projects() {
                 value={form.client}
                 onChange={(e) => setForm({ ...form, client: e.target.value })}
                 className="border px-3 py-2 rounded"
-                required
               />
               <div className="flex gap-2">
                 <input
@@ -230,7 +296,6 @@ export default function Projects() {
                     setForm({ ...form, startDate: e.target.value })
                   }
                   className="border px-3 py-2 rounded w-full"
-                  required
                 />
                 <input
                   type="date"
@@ -239,7 +304,6 @@ export default function Projects() {
                     setForm({ ...form, deadline: e.target.value })
                   }
                   className="border px-3 py-2 rounded w-full"
-                  required
                 />
               </div>
               <input
